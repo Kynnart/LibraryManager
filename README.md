@@ -127,4 +127,4 @@ All protected routes require a Bearer token in the `Authorization` header.
 
 ## Author
 
-Gladstone — TS Academy, Backend Development, Phoenix Cohort
+Gladstone Delali — TS Academy, Backend Development, Phoenix Cohort

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
+  createAttendant,
   getAllAttendants,
   createBulkAttendants,
   getAttendant,
@@ -9,10 +10,13 @@ const {
 } = require("../controllers/libraryAttendant.controller");
 const { protect, authorizeRoles } = require("../middleware/auth.middleware");
 
-// 1. GET all
+// 1. Create Attendant
+router.post("/", protect, authorizeRoles("attendant"), createAttendant);
+
+// 2. GET all Attendants
 router.get("/", protect, authorizeRoles("attendant"), getAllAttendants);
 
-// 2. Bulk BEFORE /:id
+// 3. Bulk Create Attendants
 router.post(
   "/bulk",
   protect,
@@ -20,7 +24,7 @@ router.post(
   createBulkAttendants,
 );
 
-// 3. Single resource routes
+// 4. Single resource routes
 router.get("/:attendantId", protect, authorizeRoles("attendant"), getAttendant);
 router.put(
   "/:attendantId",

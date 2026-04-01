@@ -5,6 +5,7 @@ const {
   createBulkBooks,
   getAllBooks,
   getBook,
+  getOverdueBooks,
   borrowBook,
   returnBook,
   updateBook,
@@ -35,7 +36,10 @@ router.post(
 // 3. Bulk BEFORE /:id
 router.post("/bulk", protect, authorizeRoles("attendant"), createBulkBooks);
 
-// 4. Single resource routes
+// 4. Get overdue books
+router.get("/overdue", protect, authorizeRoles("attendant"), getOverdueBooks);
+
+// 5. Single resource routes
 router.get("/:bookId", protect, getBook);
 router.put(
   "/:bookId",
@@ -47,7 +51,7 @@ router.put(
 );
 router.delete("/:bookId", protect, authorizeRoles("attendant"), deleteBook);
 
-// 5. Nested routes
+// 6. Nested routes
 router.post(
   "/:bookId/borrow",
   protect,

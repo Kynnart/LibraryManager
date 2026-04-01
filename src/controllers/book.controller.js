@@ -63,8 +63,8 @@ exports.getBook = async (req, res, next) => {
   try {
     const book = await Book.findById(req.params.bookId)
       .populate("authors", "name bio")
-      .populate("borrowedBy", "name email")
-      .populate("issuedBy", "name email");
+      .populate("borrowedBy", "name email studentId")
+      .populate("issuedBy", "name email staffId");
 
     if (!book) {
       return res
@@ -117,7 +117,28 @@ exports.deleteBook = async (req, res, next) => {
   }
 };
 
-// 7. Borrow book
+// 7. Get overdue books
+exports.getOverdueBooks = async (req, res, next) => {
+  try {
+    const books = await Book.find({
+      status: "OUT",
+      returnDate: { $lt: new Date() },
+    })
+      .populate("borrowedBy", "name email studentId")
+      .populate("issuedBy", "name email staffId")
+      .populate("authors", "name");
+
+    res.status(200).json({
+      success: true,
+      total: books.length,
+      data: books,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 8. Borrow book
 exports.borrowBook = async (req, res, next) => {
   try {
     const { studentId, returnDate } = req.body;
@@ -127,6 +148,12 @@ exports.borrowBook = async (req, res, next) => {
       return res
         .status(404)
         .json({ success: false, message: "Book not found" });
+    }
+
+    if (book.status === "OUT") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Book is already borrowed" });
     }
 
     if (book.availableCopies < 1) {
@@ -158,7 +185,7 @@ exports.borrowBook = async (req, res, next) => {
   }
 };
 
-// 8. Return book
+// 9. Return book
 exports.returnBook = async (req, res, next) => {
   try {
     const { studentId } = req.body;
@@ -170,6 +197,7 @@ exports.returnBook = async (req, res, next) => {
         .json({ success: false, message: "Book not found" });
     }
 
+    // Fix — explicitly check status instead of quantity
     if (book.status === "IN" && book.availableCopies === book.quantity) {
       return res
         .status(400)

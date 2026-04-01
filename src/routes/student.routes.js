@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
+  createStudent,
   getAllStudents,
   createBulkStudents,
   getStudent,
@@ -11,13 +12,16 @@ const { protect, authorizeRoles } = require("../middleware/auth.middleware");
 const { updateStudentValidator } = require("../validators/student.validator");
 const validate = require("../middleware/validate.middleware");
 
-// 1. GET all
+// 1. Create Student
+router.post("/", protect, authorizeRoles("attendant"), createStudent);
+
+// 2. GET all Students
 router.get("/", protect, authorizeRoles("attendant"), getAllStudents);
 
-// 2. Bulk BEFORE /:id
+// 3. Bulk Create Students
 router.post("/bulk", protect, authorizeRoles("attendant"), createBulkStudents);
 
-// 3. Single resource routes
+// 4. Single resource routes
 router.get("/:studentId", protect, getStudent);
 router.put(
   "/:studentId",

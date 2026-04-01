@@ -1,7 +1,37 @@
 const bcrypt = require("bcryptjs");
 const Student = require("../models/student");
 
-// 1. Create bulk
+// 1. Create single
+exports.createStudent = async (req, res, next) => {
+  try {
+    const { name, email, password, studentId } = req.body;
+    const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const student = await Student.create({
+      name,
+      email,
+      password: hashedPassword,
+      studentId,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Student created successfully",
+      data: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        studentId: student.studentId,
+        role: student.role,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 2. Create bulk
 exports.createBulkStudents = async (req, res, next) => {
   try {
     const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
@@ -22,7 +52,7 @@ exports.createBulkStudents = async (req, res, next) => {
   }
 };
 
-// 2. Get all
+// 3. Get all
 exports.getAllStudents = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
@@ -48,7 +78,7 @@ exports.getAllStudents = async (req, res, next) => {
   }
 };
 
-// 3. Get single
+// 4. Get single
 exports.getStudent = async (req, res, next) => {
   try {
     const student = await Student.findById(req.params.studentId)
@@ -67,10 +97,9 @@ exports.getStudent = async (req, res, next) => {
   }
 };
 
-// 4. Update single
+// 5. Update single
 exports.updateStudent = async (req, res, next) => {
   try {
-    // Prevent password and role update through this route
     delete req.body.password;
     delete req.body.role;
 
@@ -94,7 +123,7 @@ exports.updateStudent = async (req, res, next) => {
   }
 };
 
-// 5. Delete single
+// 6. Delete single
 exports.deleteStudent = async (req, res, next) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.studentId);

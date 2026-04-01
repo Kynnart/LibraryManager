@@ -1,7 +1,37 @@
 const bcrypt = require("bcryptjs");
 const LibraryAttendant = require("../models/libraryAttendant");
 
-// 1. Create bulk
+// 1. Create single
+exports.createAttendant = async (req, res, next) => {
+  try {
+    const { name, email, password, staffId } = req.body;
+    const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const attendant = await LibraryAttendant.create({
+      name,
+      email,
+      password: hashedPassword,
+      staffId,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Attendant created successfully",
+      data: {
+        id: attendant._id,
+        name: attendant.name,
+        email: attendant.email,
+        staffId: attendant.staffId,
+        role: attendant.role,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 2. Create bulk
 exports.createBulkAttendants = async (req, res, next) => {
   try {
     const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
@@ -24,7 +54,7 @@ exports.createBulkAttendants = async (req, res, next) => {
   }
 };
 
-// 2. Get all
+// 3. Get all
 exports.getAllAttendants = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
@@ -49,7 +79,7 @@ exports.getAllAttendants = async (req, res, next) => {
   }
 };
 
-// 3. Get single
+// 4. Get single
 exports.getAttendant = async (req, res, next) => {
   try {
     const attendant = await LibraryAttendant.findById(
@@ -68,7 +98,7 @@ exports.getAttendant = async (req, res, next) => {
   }
 };
 
-// 4. Update single
+// 5. Update single
 exports.updateAttendant = async (req, res, next) => {
   try {
     // Prevent password and role update through this route
@@ -95,7 +125,7 @@ exports.updateAttendant = async (req, res, next) => {
   }
 };
 
-// 5. Delete single
+// 6. Delete single
 exports.deleteAttendant = async (req, res, next) => {
   try {
     const attendant = await LibraryAttendant.findByIdAndDelete(
