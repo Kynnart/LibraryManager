@@ -1,0 +1,68 @@
+const express = require("express");
+const router = express.Router();
+const {
+  createBook,
+  createBulkBooks,
+  getAllBooks,
+  getBook,
+  borrowBook,
+  returnBook,
+  updateBook,
+  deleteBook,
+} = require("../controllers/book.controller");
+const { protect, authorizeRoles } = require("../middleware/auth.middleware");
+const {
+  borrowBookValidator,
+  createBookValidator,
+  updateBookValidator,
+  returnBookValidator,
+} = require("../validators/book.validator");
+const validate = require("../middleware/validate.middleware");
+
+// 1. GET all
+router.get("/", protect, getAllBooks);
+
+// 2. POST single
+router.post(
+  "/",
+  protect,
+  authorizeRoles("attendant"),
+  createBookValidator,
+  validate,
+  createBook,
+);
+
+// 3. Bulk BEFORE /:id
+router.post("/bulk", protect, authorizeRoles("attendant"), createBulkBooks);
+
+// 4. Single resource routes
+router.get("/:bookId", protect, getBook);
+router.put(
+  "/:bookId",
+  protect,
+  authorizeRoles("attendant"),
+  updateBookValidator,
+  validate,
+  updateBook,
+);
+router.delete("/:bookId", protect, authorizeRoles("attendant"), deleteBook);
+
+// 5. Nested routes
+router.post(
+  "/:bookId/borrow",
+  protect,
+  authorizeRoles("attendant"),
+  borrowBookValidator,
+  validate,
+  borrowBook,
+);
+router.post(
+  "/:bookId/return",
+  protect,
+  authorizeRoles("attendant"),
+  returnBookValidator,
+  validate,
+  returnBook,
+);
+
+module.exports = router;
